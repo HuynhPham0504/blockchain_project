@@ -64,3 +64,70 @@ input {
   color: #1565c0;
   border-bottom-color: #1565c0;
 }
+
+.text-main {
+  text-align: center;
+  padding-right: 30px;
+}
+
+.text-main, .text-main-col {
+  color: white
+}
+
+.index-div {
+  background-color: rgb(10, 10, 61);
+  height: 100%;
+}
+
+.index-image {
+  display: flex;
+  justify-content:space-around
+}
+
+.index-image div img {
+  width: 100%;
+  height: 400px;
+}
+
+
+/* Navbar tech style */
+.navbar-inverse {
+  background: #0e2341 !important;            /* đen xanh kiểu GitHub */
+  border-color: #0d1117 !important;
+}
+
+/* Text trong menu */
+.navbar-inverse .navbar-nav > li > a {
+  color: #bfbdd8 !important;                 /* xanh neon */
+  font-weight: 500;
+}
+
+/* Hover */
+.navbar-inverse .navbar-nav > li > a:hover,
+.navbar-inverse .navbar-nav > li.active > a {
+  color: rgb(83, 216, 216) !important;                    /* xanh neon sáng hơn */
+  background-color: rgba(22, 180, 33, 0.1) !important;
+}
+
+/* Brand logo */
+.navbar-inverse .navbar-brand {
+  color: #00e5ff !important;
+}
+
+/* Hover brand */
+.navbar-inverse .navbar-brand:hover {
+  color: #0ff !important;
+}
+
+.navbar-inverse .navbar-nav > li.active > a{
+  background-color: #1a5c7a !important;   /* màu khác hẳn */
+  color: #0ff !important;
+  border-radius: 6px;
+}
+
+/* Tab đang active */
+.navbar-inverse .navbar-nav > li.active > a,
+.navbar-inverse .navbar-nav > li.active > a:focus {
+  background-color: #1a5c7a !important; /* màu riêng nổi bật */
+  color: #0ff !important;
+}
