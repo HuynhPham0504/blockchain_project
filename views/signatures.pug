@@ -1,0 +1,133 @@
+extends layout
+
+block content
+  .container
+    .panel.panel-default
+      .panel-heading
+        h4 #{__('Signatures')}
+        ul.nav.nav-tabs#myTab(role='tablist')
+          li.active
+            a#sign-tab(data-toggle='tab', href='#sign', role='tab') #{__('Sign')}
+          li
+            a#verify-tab(data-toggle='tab', href='#verify', role='tab') #{__('Verify')}
+
+      .panel-body#card
+        .tab-content#myTabContent
+          .tab-pane.active#sign(role='tabpanel')
+            form.form-horizontal
+              .form-group
+                label.control-label(for='sign-message') #{__('Message')}
+                textarea.form-control#sign-message(rows="5")
+              .form-group
+                label.control-label(for='privateKey') #{__('Private Key')}
+                input#privateKey(type='number').form-control
+              .form-group
+                button#sign-button.btn.btn-primary.btn-block(type='button') #{__('Sign')}
+              .form-group
+                label.control-label(for='sign-signature') #{__('Message Signature')}
+                input#sign-signature.form-control(disabled)
+          
+          .tab-pane#verify(role='tabpanel')
+            form.form-horizontal
+              .form-group
+                label.control-label(for='verify-message') #{__('Message')}
+                textarea.form-control#verify-message(rows="5")
+              .form-group
+                label.control-label(for='publicKey') #{__('Public Key')}
+                input#publicKey.form-control
+              .form-group
+                label.control-label(for='verify-signature') #{__('Signature')}
+                input#verify-signature.form-control
+              .form-group
+                button#verify-button.btn.btn-primary.btn-block(type='button') #{__('Verify')}
+
+
+  script(src="https://cdnjs.cloudflare.com/ajax/libs/elliptic/6.5.4/elliptic.min.js")
+  script.
+    var EC = elliptic.ec;
+    var ec = new EC('secp256k1');
+
+    var keypair = ec.genKeyPair();
+    if (Cookies.get('privateKey')) {
+      keypair = ec.keyFromPrivate(Cookies.get('privateKey'));
+    }
+
+    function update() {
+      var prv = keypair.getPrivate('hex');
+      var pub = keypair.getPublic('hex');
+      $('#privateKey').val(bigInt(prv, 16).toString());
+      $('#publicKey').val(pub);
+      Cookies.set('privateKey', prv.toString());
+      Cookies.set('publicKey', pub);
+    }
+
+    function resetVerifier() {
+      $('#card').removeClass('alert-success');
+      $('#card').removeClass('alert-danger');
+    }
+
+    $(function() {
+      $('#sign-button').click(function() {
+        var binaryMessage = buffer.Buffer.from(CryptoJS.SHA256($('#sign-message').val()).toString(CryptoJS.enc.Hex));
+        var hexSignature = buffer.Buffer.from(keypair.sign(binaryMessage).toDER()).toString('hex');
+        $('#sign-signature').val(hexSignature);
+        $('#verify-signature').val(hexSignature);
+        update();
+        resetVerifier();
+      });
+      $('#verify-button').click(function() {
+        // verify by using only the public key
+        $('#publicKey').val($('#publicKey').val().replace(/[^0-9a-fA-F]/g, ''));
+        var tmpKey;
+        try {
+          tmpKey = ec.keyFromPublic($('#publicKey').val(), 'hex');
+          var binaryMessage = buffer.Buffer.from(CryptoJS.SHA256($('#verify-message').val()).toString(CryptoJS.enc.Hex));
+          if (tmpKey.verify(binaryMessage, $('#verify-signature').val())) {
+            $('#card').addClass('alert-success');
+          }
+          else {
+            $('#card').addClass('alert-danger');
+          }
+        }
+        catch(e) {
+          $('#card').addClass('alert-danger');
+        }
+      });
+      $('#sign-signature').bind('keyup', function() {
+        resetVerifier();
+      });
+      $('#sign-message').bind('keyup', function() {
+        resetVerifier();
+      });
+      $('#verify-signature').bind('keyup', function() {
+        resetVerifier();
+      });
+      $('#verify-message').bind('keyup', function() {
+        resetVerifier();
+      });
+      $('#publicKey').bind('keyup', function() {
+        resetVerifier();
+      });
+      $('#privateKey').bind('keyup', function() {
+        $('#privateKey').val($('#privateKey').val().replace(/\D/g, ''));
+        keypair = ec.keyFromPrivate(bigInt($('#privateKey').val()).toString(16));
+        resetVerifier();
+        update();
+      });
+      if (Cookies.get('message')) {
+        $('#sign-message').val(Cookies.get('message'));
+        $('#verify-message').val(Cookies.get('message'));
+      }
+      $('#sign-message').bind('keyup', function() {
+        Cookies.set('message', $('#sign-message').val());
+        $('#verify-message').val($('#sign-message').val());
+      });
+      $('#verify-message').bind('keyup', function() {
+        Cookies.set('message', $('#verify-message').val());
+        $('#sign-message').val($('#verify-message').val());
+      });
+      $('#myTab').on('shown.bs.tab', function (e) {
+        resetVerifier();
+      });
+      update();
+    });
